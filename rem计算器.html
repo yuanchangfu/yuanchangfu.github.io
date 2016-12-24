@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body{font-size: 18px;}
+        #div{
+            background:#ccc;padding: 50px;
+            width: 500px;margin: 150px auto;}
+        input{padding: 5px;}
+    </style>
+    <script></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var oT=document.getElementById('txt');
+            var oBtn=document.getElementById('bnt');
+            var oBtn2=document.getElementById('btn2');
+            var oSpan=document.getElementById('span');
+            var oSpan2=document.getElementById('span2');
+            oBtn.onclick=function(){
+                oSpan.innerHTML=oT.value/20;
+            };
+            oBtn2.onclick=function(){
+                oSpan2.innerHTML=(oT.value/20)/2;
+            };
+
+        },false)
+    </script>
+</head>
+<body>
+<div id="div">
+    要设置的像素：<input type="text" id="txt"><br><br>
+    <input type="button" value="生成为rem:" id="bnt">
+    <span id="span">0</span>rem <br><br>
+    <input type="button" value="除以2的结果：" id="btn2">
+    <span id="span2">0</span>rem
+</div>
+</body>
+</html>
