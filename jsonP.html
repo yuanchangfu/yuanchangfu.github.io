@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+    </style>
+    <script>
+    </script>
+</head>
+<body>
+<input type="button" value="点击" id="btn"/>
+<input type="text" id="val"/>
+</body>
+</html>
+<script>
+    window.onload=function(){
+        var oBtn=document.getElementById('btn');
+        var oVal=document.getElementById('val');
+        oVal.onkeyup=function(){
+            jsonp({
+                url:'https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su',
+                data:{
+                    wd:oVal.value
+                },
+                fnSucc:function(json){
+                    alert(json.s);
+                }
+            })
+        }
+
+
+
+        function jsonp(json){
+            if(!json.url){
+                alert('cao');
+                return;
+            }
+            json.data=json.data||{};
+            json.cbName=json.cbName||'cb';
+            var fnName='show'+Math.random();
+            fnName=fnName.replace('.','');
+            window[fnName]=function(jsonD){
+                json.fnSucc && json.fnSucc(jsonD);
+                document.head.removeChild(oS);
+            };
+            json.data[json.cbName]=fnName;
+            var arr=[];
+            for(var name in json.data) {
+                arr.push(name+'='+json.data[name]);
+            }
+            var oS=document.createElement('script');
+            oS.src=json.url+'?'+arr.join('&');
+            document.head.appendChild(oS);
+        };
+    }
+</script>
