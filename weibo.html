@@ -1,0 +1,229 @@
+﻿<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+<link href="style/weibo.css" rel="stylesheet" type="text/css" />
+<style>
+	/*id 一个标识*/
+</style>
+<script src="ajax.js"></script>
+<script src="cookie.js"></script>
+<script>
+window.onload=function(){
+	var oSend=document.getElementById('btn1');
+	var oT=document.getElementById('t1');
+	var oMsgBox=document.getElementById('msg_box');
+	var oPage=document.getElementById('page');
+	var URL='weibo.php';
+	var pageId=1;//page
+	//添加一条
+	oSend.onclick=function(){
+		//weibo.php?act=add&content=xxx
+		ajax({
+			url:URL,
+			data:{
+				act:'add',
+				content:oT.value
+			},
+			success:function(str){
+				var jsonD=eval('('+str+')');
+				if(jsonD.error)
+				{
+					alert('添加失败！')
+				}else{
+					var oDiv=createMsg(oT.value,jsonD.time,jsonD.id,0,0);
+					if(oMsgBox.children.length==0)
+					{
+						oMsgBox.appendChild(oDiv);
+					}else{						oMsgBox.insertBefore(oDiv,oMsgBox.children[0]);
+					}
+               		if(oMsgBox.children.length>6){
+               			oMsgBox.removeChild(oMsgBox.children[6]);
+               		}
+				}
+				//更新页数
+				getPage(1);
+			},
+		});
+	};
+	//获取页数
+	getPage(1);
+	function getPage(index){
+		//weibo.php?act=get_page_count	获取页数
+		oPage.innerHTML='';
+		ajax({
+						url:URL,
+						data:{
+							act:'get_page_count'
+						},
+						success:function(str){
+							var jsonD=eval('('+str+')');
+
+							for(var i=1;i<=jsonD.count;i++){
+								var oA=document.createElement('a');
+								oA.href='javascript:;';
+								if(i==index){
+									oA.className='active';
+								}
+					oA.innerHTML=i;
+					oPage.appendChild(oA);
+					//分页
+					var aA=oPage.children;
+					for (var i=0;i<aA.length;i++) {
+						//var _i=i;
+						aA[i].onclick=function(){
+							pageId=Math.floor(this.innerHTML);
+							oMsgBox.innerHTML='';
+							for (var i=0;i<aA.length;i++) {
+								aA[i].className='';
+							}
+							this.className='active';
+							getPageCon(Math.floor(this.innerHTML));
+						};
+					}
+				}
+			}
+		});
+	};
+	//获取一页数据
+	getPageCon(1);
+	function getPageCon(page){
+		oMsgBox.innerHTML='';
+		//weibo.php?act=get&page=1		获取一页数据
+		ajax({
+			url:URL,
+			data:{
+				act:'get',
+				page:page
+			},
+			success:function(str){
+				var jsonD=eval('('+str+')');
+				for(var i=0;i<jsonD.length;i++)
+				{
+					var oDiv=createMsg(jsonD[i].content,jsonD[i].time,jsonD[i].id,jsonD[i].acc,jsonD[i].ref);
+               		oMsgBox.appendChild(oDiv);
+				}
+			}
+		});
+	};
+	//创建发表的评论
+	function createMsg(oT,time,id,acc,ref){
+		var oDiv=document.createElement('div');
+		oDiv.className='reply';
+		oDiv.innerHTML='<p'+ 'class="replyContent">'+oT+'</p>'+
+   '<p class="operation">'+
+        '<span class="replyTime">'+getTime(time)+'</span>'+
+        '<span class="handle">'+
+        	'<a href="javascript:;" class="top">'+acc+'</a>'+
+            '<a href="javascript:;" class="down_icon">'+ref+'</a>'+
+           '<a href="javascript:;" class="cut">删除</a>'+
+        '</span>'+
+    '</p>';
+    	var aBtn=oDiv.getElementsByTagName('a');
+    	//del
+    	aBtn[2].onclick=function(){
+    		//weibo.php?act=del&id=12			删除一条数据
+				//返回：{error:0}
+    		ajax({
+    			url:URL,
+    			data:{
+    				act:'del',
+    				id:id
+    			},
+    			success:function(str){
+    				var jsonD=eval('('+str+')');
+    				if(jsonD.error){
+    					alert('del  error');
+    				}else{
+    					oMsgBox.removeChild(oDiv);
+    					//huoqu dangqian  shuju
+    					getPageCon(pageId);
+    					//更新页数
+						getPage(pageId);
+    					
+    				}
+    			}
+    		});
+    	};
+    	//顶某一条数据
+    	aBtn[0].onclick=function(){
+    		//weibo.php?act=acc&id=12			顶某一条数据
+			//返回：{error:0}
+			var accCon=getCookie('acc'+id);
+			if(accCon){
+				alert('nin yi ding guo le!');
+			}else{
+				ajax({
+	    			url:URL,
+	    			data:{
+	    				act:'acc',
+	    				id:id
+	    			},
+	    			success:function(str){
+	    				var jsonD=eval('('+str+')');
+	    				if(jsonD.error){
+	    					alert('acc  error');
+	    				}else{
+	    					
+	//  					if(accCon){
+	//  						alert('nin yi ding guo le!');
+	//  					}else{
+	    						aBtn[0].innerHTML++;
+	    						setCookie('acc'+id,'accCon',1);
+	//  					}
+	    					
+	    				}
+	    			}
+				});
+			}
+			
+    	};
+    	
+
+    	return oDiv;
+	};
+	//时间转换
+	function getTime(time){
+		var oDate=new Date();
+		oDate.setTime(time*1000);
+		return oDate.getFullYear()+'-'+(oDate.getMonth()+1)+'-'+oDate.getDate()+' '+oDate.getHours()+':'+oDate.getMinutes()+':'+oDate.getSeconds();
+	};
+};
+</script>
+</head>
+
+<body>
+<div class="znsArea">
+<!--留言-->
+     <div class="takeComment">
+        <textarea name="textarea" class="takeTextField" id="t1"></textarea>
+        <div class="takeSbmComment">
+            <input type="button" class="inputs" value="" id="btn1"/>
+            <span>(可按 Enter 回复)</span>
+        </div>
+    </div>
+<!--已留-->
+    <div class="commentOn">
+        <div class="messList" id="msg_box">
+        	<!--<div class="reply">
+                <p class="replyContent">卫士，新款卫士将推出总共14种车身式样。其中， XS旅行款车型售价为32295英镑(约33.6万元)。</p>
+                <p class="operation">
+                    <span class="replyTime">2011-09-08 16:37:60</span>
+                    <span class="handle">
+                    	<a href="javascript:;" class="top">0</a>
+                        <a href="javascript:;" class="down_icon">0</a>
+                        <a href="javascript:;" class="cut">删除</a>
+                    </span>
+                </p>
+            </div>-->
+        </div>
+        <div class="page" id="page">
+        	<a href="javascript:;" class="active">1</a>
+        	<a href="javascript:;">2</a>
+        	<a href="javascript:;">3</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
